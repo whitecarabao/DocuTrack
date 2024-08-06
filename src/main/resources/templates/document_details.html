@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Details</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .action-box {
+            display: inline-block;
+            padding: 0.5em;
+            color: white;
+            font-weight: bold;
+            border-radius: 0.25rem;
+        }
+        .action-box.viewed { background-color: green; color: white; }
+.last-history-viewed { background-color: green; color: white; }
+
+        .action-box.reject { background-color: red; }
+        .action-box.sign { background-color: green; }
+        .action-box.receive { background-color: yellow; color: black; }
+        .action-box.edit { background-color: orange; color: black; }
+        .last-history-reject { background-color: red; color: white; }
+        .last-history-sign { background-color: green; color: white; }
+        .last-history-receive { background-color: yellow; color: black; }
+        .last-history-edit { background-color: orange; color: black; }
+        .document-preview img { max-width: 100%; height: auto; }
+        .progress-bar {
+            height: 5px;
+            background-color: #007bff;
+            transition: width 0.4s ease-out;
+        }
+        .fade-out {
+            animation: fadeOut 1s forwards;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div th:insert="fragments/header :: header"></div>
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Document Details</h1>
+        <div id="errorMessage" class="alert alert-danger" style="display: none;">
+            <span id="errorText"></span>
+        </div>
+        <div id="documentPreview" class="mb-4"></div>
+        <div class="mb-4">
+            <h2>Document Information</h2>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <td id="docId"></td>
+                    </tr>
+                    <tr>
+                        <th>Title</th>
+                        <td id="docTitle"></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td id="docDescription"></td>
+                    </tr>
+                    <tr>
+                        <th>Location</th>
+                        <td id="docLocation"></td>
+                    </tr>
+                    <tr>
+                        <th>Person</th>
+                        <td id="docPerson"></td>
+                    </tr>
+                    <tr>
+                        <th>Created At</th>
+                        <td id="docCreatedAt"></td>
+                    </tr>
+                    <tr>
+                        <th>Updated At</th>
+                        <td id="docUpdatedAt"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- <div>
+            <h2>Document History</h2>
+            <div id="progressContainer" class="mb-4">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="lastHistory" class="mb-4"></div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr><td colspan="3">Loading history...</td></tr>
+                </tbody>
+            </table>
+        </div> -->
+        <div>
+            <h2>Document History</h2>
+            <div id="progressContainer" class="mb-4">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="lastHistory" class="mb-4"></div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr><td colspan="3">Loading history...</td></tr>
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation">
+                <ul id="pagination" class="pagination justify-content-center">
+                    <!-- Pagination buttons will be inserted here -->
+                </ul>
+            </nav>
+        </div>
+        
+    </div>
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    const PAGE_SIZE = 5; // Number of entries per page
+
+    function fetchDocumentDetails(id) {
+        console.log(`Fetching details for document ID: ${id}`);
+        
+        fetch(`/api/documents/${id}`)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorText').textContent = 'Document not found.';
+                    throw new Error('Document not found.');
+                }
+            })
+            .then(doc => {
+                console.log('Document details fetched:', doc);
+                // Display document details
+                document.getElementById('docId').textContent = doc.id || 'N/A';
+                document.getElementById('docTitle').textContent = doc.title || 'N/A';
+                document.getElementById('docDescription').textContent = doc.description || 'N/A';
+                document.getElementById('docLocation').textContent = doc.location || 'N/A';
+                document.getElementById('docPerson').textContent = doc.person || 'N/A';
+                document.getElementById('docCreatedAt').textContent = doc.createdAt ? new Date(doc.createdAt).toLocaleString() : 'N/A';
+                document.getElementById('docUpdatedAt').textContent = doc.updatedAt ? new Date(doc.updatedAt).toLocaleString() : 'N/A';
+
+                // Display document preview
+                const adjustedFilePath = doc.filePath.replace('/static', '');
+                const previewDiv = document.getElementById('documentPreview');
+                if (doc.filePath) {
+                    previewDiv.innerHTML = `
+                        <strong>Preview:</strong> <img src="${adjustedFilePath}" alt="Document Preview"/>
+                    `;
+                } else {
+                    previewDiv.innerHTML = '<p>No preview available</p>';
+                }
+
+                // Display document history with pagination
+                const historyTableBody = document.getElementById('historyTableBody');
+                const lastHistoryDiv = document.getElementById('lastHistory');
+                const pagination = document.getElementById('pagination');
+                if (doc.history && doc.history.length > 0) {
+                    historyTableBody.innerHTML = ''; // Clear loading text
+                    const history = doc.history;
+                    let currentPage = 1;
+                    const totalPages = Math.ceil(history.length / PAGE_SIZE);
+
+                    function renderPage(page) {
+                        historyTableBody.innerHTML = ''; // Clear previous content
+                        const start = (page - 1) * PAGE_SIZE;
+                        const end = Math.min(start + PAGE_SIZE, history.length);
+
+                        for (let i = start; i < end; i++) {
+                            const actionClass = history[i].action.toLowerCase().replace(' ', '-'); // Converts action to class name
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td><span class="action-box ${actionClass}">${history[i].action}</span></td>
+                                <td>${new Date(history[i].date).toLocaleString()}</td>
+                                <td>${history[i].userName} (${history[i].userPosition})</td>
+                            `;
+                            historyTableBody.appendChild(row);
+                        }
+                    }
+
+                    function updatePagination() {
+                        pagination.innerHTML = ''; // Clear previous buttons
+                        for (let i = 1; i <= totalPages; i++) {
+                            const button = document.createElement('li');
+                            button.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                            button.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                            button.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                currentPage = i;
+                                renderPage(currentPage);
+                                updatePagination();
+                            });
+                            pagination.appendChild(button);
+                        }
+                    }
+
+                    renderPage(currentPage);
+                    updatePagination();
+
+                    // Display the last history entry at the top
+                    const lastHistory = doc.history[doc.history.length - 1];
+                    const lastActionClass = lastHistory.action.toLowerCase().replace(' ', '-'); // Converts action to class name
+                    lastHistoryDiv.innerHTML = `
+                        Last Action: <span class="action-box last-history-${lastActionClass}">${lastHistory.action}</span> on ${new Date(lastHistory.date).toLocaleString()} by ${lastHistory.userName} (${lastHistory.userPosition})
+                    `;
+                } else {
+                    historyTableBody.innerHTML = '<tr><td colspan="3">No history available</td></tr>';
+                }
+            })
+            .catch(error => console.error('Error occurred while fetching document details:', error));
+    }
+
+    // Extract document ID from the URL path
+    function getDocumentIdFromPath() {
+        const path = window.location.pathname;
+        const parts = path.split('/');
+        return parts[parts.length - 1]; // Get the last part of the path
+    }
+
+    const documentId = getDocumentIdFromPath();
+
+    console.log(`Document ID from URL path: ${documentId}`);
+
+    if (documentId) {
+        fetchDocumentDetails(documentId);
+    } else {
+        document.getElementById('errorMessage').style.display = 'block';
+        document.getElementById('errorText').textContent = 'No document ID provided.';
+    }
+});
+
+
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

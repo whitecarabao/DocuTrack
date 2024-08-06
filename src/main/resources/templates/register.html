@@ -1,0 +1,124 @@
+<!-- <!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Register</h1>
+        <form th:action="@{/register}" th:object="${user}" method="post">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" th:field="*{username}" required />
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" th:field="*{password}" required />
+            </div>
+            <div class="form-group">
+                <label for="isAdmin">Admin Account:</label>
+                <input type="checkbox" id="isAdmin" th:field="*{admin}" />
+            </div>
+            <div class="form-group">
+                <label for="sectionName">Section Name:</label>
+                <select class="form-control" id="sectionName" th:field="*{sectionName}">
+                    <option th:each="section : ${sections}"
+                            th:value="${section.name()}"
+                            th:text="${section.getDescription()}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="position">Position:</label>
+                <input type="text" class="form-control" id="position" th:field="*{position}" required />
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                <select class="form-control" id="gender" th:field="*{gender}">
+                    <option th:each="gender : ${genders}" th:value="${gender}" th:text="${gender}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function validatePassword() {
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var submitButton = document.getElementById('registerButton');
+            
+            if (password !== confirmPassword) {
+                document.getElementById('passwordMismatch').style.display = 'block';
+                submitButton.disabled = true;
+            } else {
+                document.getElementById('passwordMismatch').style.display = 'none';
+                submitButton.disabled = false;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Register</h1>
+        <form th:action="@{/register}" th:object="${user}" method="post" oninput="validatePassword()">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" th:field="*{username}" required />
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" th:field="*{password}" required />
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                <div id="passwordMismatch" style="color: red; display: none;">
+                    Passwords do not match.
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required />
+            </div>
+            <div class="form-group">
+                <label for="isAdmin">Admin Account:</label>
+                <input type="checkbox" id="isAdmin" th:field="*{admin}" />
+            </div>
+            <div class="form-group">
+                <label for="sectionName">Section Name:</label>
+                <select class="form-control" id="sectionName" th:field="*{sectionName}">
+                    <option th:each="section : ${sections}"
+                            th:value="${section.name()}"
+                            th:text="${section.getDescription()}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="position">Position:</label>
+                <input type="text" class="form-control" id="position" th:field="*{position}" required />
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                <select class="form-control" id="gender" th:field="*{gender}">
+                    <option th:each="gender : ${genders}" th:value="${gender}" th:text="${gender}"></option>
+                </select>
+            </div>
+            <button type="submit" id="registerButton" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+

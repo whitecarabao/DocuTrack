@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <title th:text="${title}">Login Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 50px 0;
+        }
+        .login-form {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-form h1 {
+            margin-bottom: 20px;
+        }
+        .login-form .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .login-form .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .footer-text {
+            margin-top: 20px;
+            font-size: 0.9em;
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div th:insert="fragments/header :: header"></div>
+    <div class="login-container">
+        <div class="login-form">
+            <h1 class="text-center">DocuTrack Login</h1>
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" name="username" required/>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" name="password" required/>
+                </div>
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </div>
+                <div class="text-center">
+                    <p th:if="${param.error}" th:text="${param.message}" class="alert alert-danger">Invalid username or password</p>
+                    <p th:if="${param.success}" class="alert alert-success">Registration successful. Please log in.</p>
+                </div>
+            </form>
+            <div class="text-center">
+                <button type="button" class="btn btn-info mt-2" data-toggle="modal" data-target="#instructionsModal">
+                    Instructions
+                </button>
+            </div>
+            <div class="footer-text">
+                <p>Developed by Daryll A. Gomez for the Province of Surigao Del Norte</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-labelledby="instructionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instructionsModalLabel">Upload Instructions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Please ensure to take and upload clear photos.</p>
+                    <p>Accuracy of the information inputted is crucial for proper document tracking.</p>
+                    <ul>
+                        <li>Check the lighting and clarity of the photos.</li>
+                        <li>Ensure all necessary details are visible and legible.</li>
+                        <li>Double-check all entered information for correctness.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>
