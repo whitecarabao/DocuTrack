@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -37,8 +38,11 @@ public class DocumentController {
 
     @Autowired
     private UserRepository userRepository;
-    
-    private final Path rootLocation = Paths.get("C:\\Users\\PC\\Documents\\Dev\\bundle\\src\\main\\resources\\static\\uploads\\docs");
+
+    // private final Path rootLocation = Paths.get("C:\\Users\\PC\\Documents\\Dev\\bundle\\src\\main\\resources\\static\\uploads\\docs");
+
+    private final Path rootLocation = Paths.get(System.getProperty("user.home"), "uploads", "docs");
+
 
     @GetMapping
     public List<Document> getAllDocuments() {
@@ -60,72 +64,157 @@ public class DocumentController {
     }
 
     @PostMapping
-    public RedirectView createDocument(@RequestParam("title") String title,
-                                       @RequestParam("description") String description,
-                                       @RequestParam("location") String location,
-                                       @RequestParam("person") String person,
-                                       @RequestParam("file") MultipartFile file) {
-        System.out.println("Creating document with title: " + title);
-        try {
-            if (!Files.exists(rootLocation)) {
-                System.out.println("Uploads directory does not exist. Creating...");
-                Files.createDirectories(rootLocation);
-            }
-
-            String filename = file.getOriginalFilename();
-            System.out.println("Original file name: " + filename);
-            if (filename == null || filename.contains("..")) {
-                System.out.println("Invalid file name: " + filename);
-                return new RedirectView("/main?error=Invalid+file+name");
-            }
-
-            Path destinationFile = rootLocation.resolve(Paths.get(filename)).normalize().toAbsolutePath();
-            System.out.println("Destination file path: " + destinationFile);
-
-            // Ensure file path is within the intended directory
-            if (!destinationFile.startsWith(rootLocation.toAbsolutePath())) {
-                System.out.println("Invalid file path: " + destinationFile);
-                return new RedirectView("/main?error=Invalid+file+path");
-            }
-
-            // Check if file already exists
-            if (Files.exists(destinationFile)) {
-                System.out.println("File already exists: " + filename);
-                return new RedirectView("/main?error=File+already+exists");
-            }
-
-            file.transferTo(destinationFile);
-            System.out.println("File transferred successfully");
-
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/static/uploads/docs/")
-                    .path(filename)
-                    .toUriString();
-            System.out.println("File download URI: " + fileDownloadUri);
-
-            Document document = new Document();
-            document.setTitle(title);
-            document.setDescription(description);
-            document.setLocation(location);
-            document.setPerson(person);
-            document.setFilePath(fileDownloadUri);
-            document.setCreatedAt(LocalDateTime.now());
-            document.setUpdatedAt(LocalDateTime.now());
-
-            Document savedDocument = documentService.createDocument(document);
-            System.out.println("Document created: " + savedDocument);
-            return new RedirectView("/main?success=Document+created+successfully");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error occurred while creating document: " + e.getMessage());
-            return new RedirectView("/main?error=Error+occurred+while+creating+document");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error occurred while creating document: " + e.getMessage());
-            return new RedirectView("/main?error=Error+occurred+while+creating+document");
+public RedirectView createDocument(@RequestParam("title") String title,
+                                   @RequestParam("description") String description,
+                                   @RequestParam("location") String location,
+                                   @RequestParam("person") String person,
+                                   @RequestParam("file") MultipartFile file) {
+    System.out.println("Creating document with title: " + title);
+    try {
+        if (!Files.exists(rootLocation)) {
+            System.out.println("Uploads directory does not exist. Creating...");
+            Files.createDirectories(rootLocation);
         }
+
+        String originalFilename = file.getOriginalFilename();
+        System.out.println("Original file name: " + originalFilename);
+        if (originalFilename == null || originalFilename.contains("..")) {
+            System.out.println("Invalid file name: " + originalFilename);
+            return new RedirectView("/main?error=Invalid+file+name");
+        }
+
+        // Get the file extension (if any)
+        String extension = "";
+        int i = originalFilename.lastIndexOf('.');
+        if (i >= 0) {
+            extension = originalFilename.substring(i);
+        }
+
+        // Generate a random filename using UUID
+        String randomizedFilename = UUID.randomUUID().toString() + extension;
+        System.out.println("Randomized file name: " + randomizedFilename);
+
+        Path destinationFile = rootLocation.resolve(Paths.get(randomizedFilename)).normalize().toAbsolutePath();
+        System.out.println("Destination file path: " + destinationFile);
+
+        // Ensure file path is within the intended directory
+        if (!destinationFile.startsWith(rootLocation.toAbsolutePath())) {
+            System.out.println("Invalid file path: " + destinationFile);
+            return new RedirectView("/main?error=Invalid+file+path");
+        }
+
+        // Check if file already exists (unlikely with UUID but added for safety)
+        if (Files.exists(destinationFile)) {
+            System.out.println("File already exists: " + randomizedFilename);
+            return new RedirectView("/main?error=File+already+exists");
+        }
+
+        file.transferTo(destinationFile);
+        System.out.println("File transferred successfully");
+
+        // String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+        //         .path("/uploads/docs/")
+        //         .path(randomizedFilename)
+        //         .toUriString();
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+    .path("/uploads/docs/")
+    .path(randomizedFilename)
+    .toUriString();
+        System.out.println("File download URI: " + fileDownloadUri);
+
+        Document document = new Document();
+        document.setTitle(title);
+        document.setDescription(description);
+        document.setLocation(location);
+        document.setPerson(person);
+        document.setFilePath(fileDownloadUri);
+        document.setCreatedAt(LocalDateTime.now());
+        document.setUpdatedAt(LocalDateTime.now());
+
+        Document savedDocument = documentService.createDocument(document);
+        System.out.println("Document created: " + savedDocument);
+        return new RedirectView("/main?success=Document+created+successfully");
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        System.out.println("Error occurred while creating document: " + e.getMessage());
+        return new RedirectView("/main?error=Error+occurred+while+creating+document");
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Error occurred while creating document: " + e.getMessage());
+        return new RedirectView("/main?error=Error+occurred+while+creating+document");
     }
+}
+
+
+    // @PostMapping
+    // public RedirectView createDocument(@RequestParam("title") String title,
+    //                                    @RequestParam("description") String description,
+    //                                    @RequestParam("location") String location,
+    //                                    @RequestParam("person") String person,
+    //                                    @RequestParam("file") MultipartFile file) {
+    //     System.out.println("Creating document with title: " + title);
+    //     try {
+    //         if (!Files.exists(rootLocation)) {
+    //             System.out.println("Uploads directory does not exist. Creating...");
+    //             Files.createDirectories(rootLocation);
+    //         }
+
+    //         String filename = file.getOriginalFilename();
+    //         System.out.println("Original file name: " + filename);
+    //         if (filename == null || filename.contains("..")) {
+    //             System.out.println("Invalid file name: " + filename);
+    //             return new RedirectView("/main?error=Invalid+file+name");
+    //         }
+
+    //         Path destinationFile = rootLocation.resolve(Paths.get(filename)).normalize().toAbsolutePath();
+    //         System.out.println("Destination file path: " + destinationFile);
+
+    //         // Ensure file path is within the intended directory
+    //         if (!destinationFile.startsWith(rootLocation.toAbsolutePath())) {
+    //             System.out.println("Invalid file path: " + destinationFile);
+    //             return new RedirectView("/main?error=Invalid+file+path");
+    //         }
+
+    //         // Check if file already exists
+    //         if (Files.exists(destinationFile)) {
+    //             System.out.println("File already exists: " + filename);
+    //             return new RedirectView("/main?error=File+already+exists");
+    //         }
+
+    //         file.transferTo(destinationFile);
+    //         System.out.println("File transferred successfully");
+
+    //         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+    //                 .path("/static/uploads/docs/")
+    //                 .path(filename)
+    //                 .toUriString();
+    //         System.out.println("File download URI: " + fileDownloadUri);
+
+    //         Document document = new Document();
+    //         document.setTitle(title);
+    //         document.setDescription(description);
+    //         document.setLocation(location);
+    //         document.setPerson(person);
+    //         document.setFilePath(fileDownloadUri);
+    //         document.setCreatedAt(LocalDateTime.now());
+    //         document.setUpdatedAt(LocalDateTime.now());
+
+    //         Document savedDocument = documentService.createDocument(document);
+    //         System.out.println("Document created: " + savedDocument);
+    //         return new RedirectView("/main?success=Document+created+successfully");
+
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //         System.out.println("Error occurred while creating document: " + e.getMessage());
+    //         return new RedirectView("/main?error=Error+occurred+while+creating+document");
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //         System.out.println("Error occurred while creating document: " + e.getMessage());
+    //         return new RedirectView("/main?error=Error+occurred+while+creating+document");
+    //     }
+    // }
 
     // @PostMapping
     // public ResponseEntity<Document> createDocument(@RequestParam("title") String title,

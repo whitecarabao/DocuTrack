@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/header").permitAll()
                 .requestMatchers("/uploads").permitAll()
                 .requestMatchers("/static/**").permitAll()
+                .requestMatchers("/uploads/docs/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

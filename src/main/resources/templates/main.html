@@ -55,11 +55,15 @@
         table-layout: fixed; /* Ensures consistent column widths */
       }
 
+      .table td {
+        word-wrap: break-word;
+        max-width: 200px; /* Set the maximum width for table cells */
+        white-space: normal;
+      }
       .table th,
       .table td {
         text-align: center; /* Center align text in cells */
-        white-space: nowrap; /* Prevent text wrapping in cells */
-        overflow: hidden;
+
         text-overflow: ellipsis; /* Add ellipsis if text is too long */
       }
 
@@ -102,6 +106,14 @@
       >
         <span th:text="${param.error}"></span>
       </div>
+      <div
+        th:if="${param.warning}"
+        class="alert alert-warning text-center"
+        role="alert"
+      >
+        <span th:text="${param.warning}"></span>
+      </div>
+
       <h1 class="text-center mb-4">Document List</h1>
       <div class="row mb-4">
         <div class="col-md-9">
@@ -144,11 +156,15 @@
               <td th:text="${document.title}">Title</td>
               <td th:text="${document.description}">Description</td>
               <!-- <td th:text="${document.location}">Location</td> -->
-              <td th:text="${document.location == 'RPD' ? 'Research and Planning Division' 
+              <td
+                th:text="${document.location == 'RPD' ? 'Research and Planning Division' 
                                                          : document.location == 'OPD' ? 'Operations and Warning Division' 
                                                          : document.location == 'ADM' ? 'Administration and Finance Division' 
                                                          : document.location == 'EXE' ? 'Executive Level' 
-                                                         : document.location}">UNKNOWN</td>
+                                                         : document.location}"
+              >
+                UNKNOWN
+              </td>
               <td th:text="${document.person}">Person</td>
               <td
                 th:text="${#temporals.format(document.createdAt, 'yyyy-MM-dd HH:mm:ss')}"
@@ -161,9 +177,15 @@
                 Updated At
               </td>
               <td>
-                <img
+                <!-- <img
                   th:if="${document.filePath}"
                   th:src="@{'/uploads/docs/' + ${#strings.substring(document.filePath, document.filePath.lastIndexOf('/') + 1)}}"
+                  class="table-img"
+                  alt="Document Image"
+                /> -->
+                <img
+                  th:if="${document.filePath}"
+                  th:src="@{${document.filePath}}"
                   class="table-img"
                   alt="Document Image"
                 />
@@ -758,48 +780,49 @@
             </button>
           </div>
           <div class="modal-body">
-         <form
-  id="editDocumentForm"
-  action=""
-  method="post"
-  enctype="multipart/form-data"
->
-  <input type="hidden" id="editDocumentId" name="id" />
-  <input type="hidden" name="_method" value="PUT" />
+            <form
+              id="editDocumentForm"
+              action=""
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <input type="hidden" id="editDocumentId" name="id" />
+              <input type="hidden" name="_method" value="PUT" />
 
-  <div class="form-group">
-    <label for="editDocumentTitle">Title</label>
-    <input
-      type="text"
-      class="form-control"
-      id="editDocumentTitle"
-      name="title"
-      required
-    />
-  </div>
-  <div class="form-group">
-    <label for="editDocumentDescription">Description</label>
-    <textarea
-      class="form-control"
-      id="editDocumentDescription"
-      name="description"
-      rows="3"
-      required
-    ></textarea>
-  </div>
-  <div class="form-group">
-    <label for="editDocumentFile">Upload File</label>
-    <input
-      type="file"
-      class="form-control"
-      id="editDocumentFile"
-      name="file"
-      accept="image/*"
-    />
-  </div>
-  <button type="submit" class="btn btn-primary">Save Changes</button>
-</form>
-
+              <div class="form-group">
+                <label for="editDocumentTitle">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editDocumentTitle"
+                  name="title"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="editDocumentDescription">Description</label>
+                <textarea
+                  class="form-control"
+                  id="editDocumentDescription"
+                  name="description"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="editDocumentFile">Upload File</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  id="editDocumentFile"
+                  name="file"
+                  accept="image/*"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Save Changes
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -869,16 +892,24 @@
               $("#documentDetailsDescription").val(data.description);
               $("#detailsLocation").val(data.location);
               $("#detailsPerson").val(data.person);
+              // if (data.filePath) {
+              //   $("#documentDetailsImage")
+              //     .attr(
+              //       "src",
+              //       "/uploads/docs/" +
+              //         data.filePath.substring(
+              //           data.filePath.lastIndexOf("/") + 1
+              //         )
+              //     )
+              //     .show();
+              //   $("#documentDetailsNoPreview").hide();
+              // } else {
+              //   $("#documentDetailsImage").hide();
+              //   $("#documentDetailsNoPreview").show();
+              // }
               if (data.filePath) {
-                $("#documentDetailsImage")
-                  .attr(
-                    "src",
-                    "/uploads/docs/" +
-                      data.filePath.substring(
-                        data.filePath.lastIndexOf("/") + 1
-                      )
-                  )
-                  .show();
+                // If filePath contains the full path, you can directly use it
+                $("#documentDetailsImage").attr("src", data.filePath).show();
                 $("#documentDetailsNoPreview").hide();
               } else {
                 $("#documentDetailsImage").hide();
@@ -917,34 +948,35 @@
     <script>
       //edit DocModal
       $(document).ready(function () {
-  $("#editDocumentModal").on("show.bs.modal", function (event) {
-    var button = $(event.relatedTarget); // Button that triggered the modal
-    var documentId = button.data("id"); // Extract the document ID
+        $("#editDocumentModal").on("show.bs.modal", function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var documentId = button.data("id"); // Extract the document ID
 
-    // Fetch document details via AJAX
-    $.ajax({
-      url: "/api/documents/" + documentId,
-      method: "GET",
-      success: function (data) {
-        console.log("Data received:", data); // For debugging
+          // Fetch document details via AJAX
+          $.ajax({
+            url: "/api/documents/" + documentId,
+            method: "GET",
+            success: function (data) {
+              console.log("Data received:", data); // For debugging
 
-        // Populate the form fields with data
-        $("#editDocumentId").val(data.id);
-        $("#editDocumentTitle").val(data.title);
-        $("#editDocumentDescription").val(data.description);
+              // Populate the form fields with data
+              $("#editDocumentId").val(data.id);
+              $("#editDocumentTitle").val(data.title);
+              $("#editDocumentDescription").val(data.description);
 
-        // Set the form action to the correct endpoint
-        $("#editDocumentForm").attr("action", "/api/documents/" + data.id);
-      },
-      error: function (xhr, status, error) {
-        console.error("Error fetching document data:", error);
-        alert("Failed to load document data. Please try again.");
-      },
-    });
-  });
-});
-
-
+              // Set the form action to the correct endpoint
+              $("#editDocumentForm").attr(
+                "action",
+                "/api/documents/" + data.id
+              );
+            },
+            error: function (xhr, status, error) {
+              console.error("Error fetching document data:", error);
+              alert("Failed to load document data. Please try again.");
+            },
+          });
+        });
+      });
 
       //delete DocModal
 

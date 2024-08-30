@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Training</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* ... (Overlay styles from previous response) */
+    </style>
+</head>
+<body>
+
+    <div th:insert="fragments/header :: header"></div>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title" id="scenarioScript" th:text="${scenario.script}"></h1>
+
+                <form id="trainingForm" th:action="@{/submitAnswers}" method="post">
+                    <div th:each="question, iterStat : ${scenario.questions}" class="form-group">
+                        <label for="|'answer' + ${iterStat.index}|" th:text="${question.questionText}"></label>
+                        <input type="text" class="form-control" th:id="|'answer' + ${iterStat.index}|" th:name="|'answer' + ${iterStat.index}|">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Answers</button>
+                </form>
+
+                <div id="actionButtons" style="display: none;">
+                    <button class="btn btn-success" onclick="getScore()">Get Score</button>
+                    <button class="btn btn-secondary" onclick="resetScenario()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="overlay-content">
+            <p>Thank you for answering!</p>
+        </div>
+    </div>
+
+    <div class="modal fade" id="scoreModal" tabindex="-1" role="dialog" aria-labelledby="scoreModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scoreModalLabel">PDRRMO MIS Training System</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>This action requires administrator privileges. Please enter Capacity Development Access Key (CAPDEV Key)</p>
+                    <input type="password" id="capdevKey" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="checkKeyAndShowScore()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
+    <script>
+        $(document).ready(function() {
+            $("#trainingForm").submit(function(event) {
+                event.preventDefault(); 
+    
+                // Basic animation (fade out and reset)
+                $(this).fadeOut(500, function() {
+                    $(this).trigger("reset"); 
+                    $(this).fadeIn(500);
+                });
+    
+                // Show overlay
+                $("#overlay").fadeIn(500);
+                setTimeout(function() {
+                    $("#overlay").fadeOut(500);
+                }, 2000); 
+    
+                // Show action buttons
+                $("#actionButtons").fadeIn(500);
+            });
+        });
+    
+        function getScore() {
+            $("#scoreModal").modal("show"); 
+        }
+    
+        function resetScenario() {
+            $.ajax({
+                url: "/getNewScenario",
+                type: "GET",
+                success: function(newScenario) {
+                    // Update the form with the new scenario data
+                    $("#scenarioScript").text(newScenario.script); 
+                    // ... Update questions dynamically (you might need to adjust the HTML structure)
+                },
+                error: function() {
+                    alert("Error fetching new scenario. Please try again.");
+                }
+            });
+        }
+    
+        function checkKeyAndShowScore() {
+            var enteredKey = $("#capdevKey").val();
+            if (enteredKey === "CAPDEV-PDRRMO2024?!?") {
+                // Fetch the score from the model (if you passed it in the previous request)
+                var score = /*[[${score}]]*/ 0; // Thymeleaf expression to access the score
+    
+                alert("Your score is: " + score + "%");
+                $("#scoreModal").modal("hide"); 
+            } else {
+                alert("Incorrect key. Please try again.");
+            }
+        }
+    </script>
+</body>
+</html>

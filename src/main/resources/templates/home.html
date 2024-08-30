@@ -1,25 +1,134 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>DocuTrack Home</title>
+    <title>PDRRMO MIS Platform</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+        .h1{
+            font-family: 'Abraham Sans', sans-serif;
+            font-weight: bold;
+        }
+
+.big-buttons .btn-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        font-size: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .big-buttons .btn-icon .icon {
+        font-size: 2rem;
+        margin-right: 10px;
+    }
+
+    .big-buttons .btn-label {
+        font-size: 1.25rem;
+        /* font-weight: bold; */
+    }
+
+    .big-buttons .btn {
+        height: 100px;
+    }
+
+        .btn-icon {
+            font-size: 24px;
+            display: block;
+            width: 100%;
+            height: 100px;
+            text-align: center;
+            line-height: 60px;
+        }
+        .icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .tracking-section {
+            max-width: 500px;
+            margin: auto;
+        }
+        .big-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
     <div th:insert="fragments/header :: header"></div>
     <div class="container mt-5">
-        <h1 class="mb-4">DocuTrack Home</h1>
-        <div class="form-group">
-            <label for="documentId">Enter Document ID:</label>
-            <input type="text" class="form-control" id="documentId" placeholder="Document ID">
-        </div>
-        <button class="btn btn-primary" onclick="trackDocument()">TRACK</button>
+        <h1 class="text-center">PDRRMO MIS</h1>
+        <h4 class="text-center">Welcome to the PDRRMO Managed Information System</h4>
+        <div class="text-center">All-in-One Administration, Research, and Capacity Development Center for PDRRMO Surigao Del Norte</div>
+        <br>
+        <br>
+        <div class="tracking-section">
+            <div class="form-group">
+                <label for="documentId">Enter Document ID:</label>
+                <input type="text" class="form-control" id="documentId" placeholder="Document ID">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="trackDocument()">TRACK</button>
 
-        <!-- Display Division or Open Access message -->
-        <div class="mt-4">
-            <p th:if="${user != null}" th:text="'Welcome to ' + ${user.sectionName}">Welcome to Research and Planning Division</p>
-            <p th:if="${user == null}">Open Access</p>
+            <!-- Display Division or Open Access message -->
+            <!-- <div class="mt-4 text-center">
+                <p th:if="${user != null}" th:text="'Welcome to ' + ${user.sectionName}">Welcome to Research and Planning Division</p>
+                <p th:if="${user == null}">Open Access</p>
+            </div> -->
+        </div>
+
+        <!-- Big Buttons Section -->
+        <div class="container mt-5">
+            <!-- Big Buttons Section -->
+            <div class="row big-buttons mt-5 text-center">
+                <div class="col-md-4 mb-4">
+                    <a href="/capdev-admin" class="btn btn-info btn-lg btn-block btn-icon">
+                        <span class="icon">&#128736;</span> <!-- Gear Icon for Admin -->
+                        <span class="btn-label">CAPDEV Administration</span>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="/training" class="btn btn-success btn-lg btn-block btn-icon">
+                        <span class="icon">&#127891;</span> <!-- Graduation Cap Icon for Training -->
+                        <span class="btn-label">Training Module</span>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <a href="/main" class="btn btn-warning btn-lg btn-block btn-icon">
+                        <span class="icon">&#128196;</span> <!-- Clipboard Icon for DocuTrack -->
+                        <span class="btn-label">DocuTrack</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="container mt-5">
+        <!-- Big Buttons Section -->
+        <div class="row big-buttons mt-5 text-center">
+            <div class="col-md-4 mb-4">
+                <a href="/capdev-admin" class="btn btn-info btn-lg btn-block btn-icon">
+                    <span class="icon">📜</span> <!-- Gear Icon for Admin -->
+                    <span class="btn-label">PDRRMO eSPMS [BETA]</span>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4">
+                <a href="/training" class="btn btn-success btn-lg btn-block btn-icon">
+                    <span class="icon">🚩</span> <!-- Graduation Cap Icon for Training -->
+                    <span class="btn-label">PDRRMO eICS Activation</span>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4">
+                <a href="/main" class="btn btn-warning btn-lg btn-block btn-icon">
+                    <span class="icon">💹</span> <!-- Clipboard Icon for DocuTrack -->
+                    <span class="btn-label">PDRRMO eFinance</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script>
         function trackDocument() {

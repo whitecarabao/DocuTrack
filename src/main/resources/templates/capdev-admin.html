@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>CapDev Admin</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <meta name="csrf-token" content="${_csrf.token}" />
+  </head>
+  <body>
+    <div th:insert="fragments/header :: header"></div>
+
+    <div class="container mt-5">
+      <h2>Training Scenarios</h2>
+
+      <!-- Add Scenario Button -->
+      <div class="mb-3">
+        <button
+          class="btn btn-primary"
+          data-toggle="modal"
+          data-target="#addScenarioModal"
+        >
+          Add Scenario
+        </button>
+      </div>
+
+      <!-- Scenarios List -->
+      <div th:fragment="scenariosListFragment">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Scenario Script</th>
+              <th>Questions</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="scenario : ${scenarios}">
+              <td th:text="${scenario.script}">Scenario Script</td>
+              <td>
+                <ul>
+                  <li th:each="question : ${scenario.questions}">
+                    <strong th:text="${question.questionText}"
+                      >Question Text</strong
+                    >
+                    <ul>
+                      <li th:text="'Correct: ' + ${question.correctAnswer}">
+                        Correct Answer
+                      </li>
+                      <li th:text="'Wrong 1: ' + ${question.wrongAnswer1}">
+                        Wrong Answer 1
+                      </li>
+                      <li th:text="'Wrong 2: ' + ${question.wrongAnswer2}">
+                        Wrong Answer 2
+                      </li>
+                      <li th:text="'Wrong 3: ' + ${question.wrongAnswer3}">
+                        Wrong Answer 3
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </td>
+              <td>
+                <!-- Edit Scenario Button -->
+                <button
+                  class="btn btn-warning btn-sm"
+                  data-toggle="modal"
+                  data-target="#editScenarioModal"
+                  th:data-scenario-id="${scenario.id}"
+                  th:data-scenario-script="${scenario.script}"
+                  th:data-questions="${scenario.questions}"
+                >
+                  Edit
+                </button>
+                <!-- Delete Scenario Button -->
+                <a
+                  th:href="@{'/capdev-admin/scenarios/' + ${scenario.id} + '/delete'}"
+                  class="btn btn-danger btn-sm"
+                  >Delete</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Add Scenario Modal -->
+      <div
+        class="modal fade"
+        id="addScenarioModal"
+        tabindex="-1"
+        aria-labelledby="addScenarioModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addScenarioModalLabel">
+                Add New Scenario
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form
+                th:action="@{/capdev-admin/scenarios}"
+                th:object="${scenario}"
+                method="post"
+              >
+                <div class="mb-3">
+                  <label for="script" class="form-label">Scenario Script</label>
+                  <textarea
+                    class="form-control"
+                    id="script"
+                    th:field="*{script}"
+                    required
+                  ></textarea>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-dismiss="modal"
+                  >
+                    Close
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Save Scenario
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Scenario Modal -->
+      <!-- Edit Scenario Modal -->
+      <div
+        class="modal fade"
+        id="editScenarioModal"
+        tabindex="-1"
+        aria-labelledby="editScenarioModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editScenarioModalLabel">
+                Edit Scenario
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <!-- Form to update Scenario -->
+              <form id="editScenarioForm">
+                <input type="hidden" id="scenarioId" />
+                <div class="mb-3">
+                  <label for="script" class="form-label">Scenario Script</label>
+                  <textarea
+                    class="form-control"
+                    id="script"
+                    required
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <h5>Questions</h5>
+                  <div id="questionsContainer">
+                    <!-- Questions will be dynamically inserted here -->
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-dismiss="modal"
+                  >
+                    Close
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Handle the edit button click
+  document
+    .querySelectorAll('[data-target="#editScenarioModal"]')
+    .forEach((button) => {
+      button.addEventListener("click", function () {
+        const scenarioId = this.getAttribute("data-scenario-id");
+
+        // Fetch scenario data using AJAX
+        fetch(`/capdev-admin/scenarios/${scenarioId}`)
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("scenarioId").value = data.id;
+            document.getElementById("script").value = data.script;
+            const questionsContainer = document.getElementById("questionsContainer");
+            questionsContainer.innerHTML = "";
+
+            data.questions.forEach((question, index) => {
+              questionsContainer.innerHTML += `
+                <div class="mb-3">
+                  <label for="questionText${index}" class="form-label">Question Text</label>
+                  <input type="text" class="form-control" id="questionText${index}" name="questions[${index}].questionText" value="${question.questionText}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="correctAnswer${index}" class="form-label">Correct Answer</label>
+                  <input type="text" class="form-control" id="correctAnswer${index}" name="questions[${index}].correctAnswer" value="${question.correctAnswer}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="wrongAnswer1${index}" class="form-label">Wrong Answer 1</label>
+                  <input type="text" class="form-control" id="wrongAnswer1${index}" name="questions[${index}].wrongAnswer1" value="${question.wrongAnswer1}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="wrongAnswer2${index}" class="form-label">Wrong Answer 2</label>
+                  <input type="text" class="form-control" id="wrongAnswer2${index}" name="questions[${index}].wrongAnswer2" value="${question.wrongAnswer2}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="wrongAnswer3${index}" class="form-label">Wrong Answer 3</label>
+                  <input type="text" class="form-control" id="wrongAnswer3${index}" name="questions[${index}].wrongAnswer3" value="${question.wrongAnswer3}" required>
+                </div>
+                <hr>
+              `;
+            });
+          })
+          .catch((error) => {
+            console.error("Error fetching scenario:", error);
+            alert("Error fetching scenario data.");
+          });
+      });
+    });
+
+  // Handle the form submission
+  document.getElementById("editScenarioForm").addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const scenarioId = document.getElementById("scenarioId").value;
+  if (!scenarioId) {
+    console.error("Scenario ID is missing.");
+    alert("Error: Scenario ID is missing.");
+    return;
+  }
+
+  // Collect form data
+const formData = new FormData(this);
+const data = { id: scenarioId, script: document.getElementById("script").value, questions: [] };
+
+// Collect questions data
+document.querySelectorAll("#questionsContainer div").forEach((div, index) => {
+  data.questions.push({
+    id: div.querySelector(`#questionId${index}`)?.value || null, // Ensure to set id
+    questionText: div.querySelector(`#questionText${index}`).value,
+    correctAnswer: div.querySelector(`#correctAnswer${index}`).value,
+    wrongAnswer1: div.querySelector(`#wrongAnswer1${index}`).value,
+    wrongAnswer2: div.querySelector(`#wrongAnswer2${index}`).value,
+    wrongAnswer3: div.querySelector(`#wrongAnswer3${index}`).value
+  });
+});
+
+console.log("Payload to transmit: \n\n" + JSON.stringify(data)); // Ensure this shows correct data structure
+
+// Send the data
+fetch(`/capdev-admin/scenarios/${scenarioId}`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+  },
+  body: JSON.stringify(data),
+})
+.then((response) => {
+  // handle response
+})
+.catch((error) => {
+  console.error("Error updating scenario:", error);
+  alert("Error updating scenario.");
+});
+
+});
+
+
+});
+
+  </script>
+</html>
